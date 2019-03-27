@@ -1,0 +1,111 @@
+<html>
+<head>
+<style>
+.warn { color: red; font-weight: bold; }
+</style>
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+
+<script>
+
+// Dislay the state on the page with an optional highlight
+var displayState = (state, warn) => {
+    if (warn) {
+        $( "#status" ).html(`<span class="warn">${state.status}<span>`);
+    } else {
+        $( "#status" ).html(state.status);
+    }
+    $( "#uptime" ).html(Math.floor((Date.now() - state.starttime)/1000) + "s");
+}
+
+var displayLockState = (state) => {
+    $( "#locks" ).html(state.status);
+}
+
+// Get the service status and uptime from the server endpoint
+var getStatus = (repeat) => {
+    $.get( "/status", ( data ) => {
+        displayState(data, false);
+    }).fail( (query) => {
+        if (query.status === 503) {
+            displayState(query.responseJSON, true);
+        }
+    });
+    if (repeat) {
+        setTimeout( () => getStatus(repeat), 3000);
+    }
+}
+
+var getLockStatus = (repeat) => {
+    $.get( "/lock-status", ( data ) => {
+        displayLockState(data);
+    }).fail( (query) => {
+        console.log(query)
+        if (query.status === 500) {
+            displayState(query.responseJSON, true);
+        }
+    });
+    if (repeat) {
+        setTimeout( () => getLockStatus(repeat), 3000);
+    }
+}
+
+// Trigger breakage on the server
+var breakThings = () => {
+    $.get( "/break_things", function(data) {
+        console.log(data);
+        getStatus();
+    })
+}
+
+// Set new lock
+var newLock = () => {
+    $.get( "/new-lock", function(data) {
+        console.log(data);
+        $( "#locks" ).html(data);
+    })
+}
+
+// Set old lock
+var oldLock = () => {
+    $.get( "/old-lock", function(data) {
+        console.log(data);
+        $( "#locks" ).html(data);
+    })
+}
+
+// start polling the status
+$( document ).ready( () => {
+    getStatus(true);
+    getLockStatus(true);
+})
+
+</script>
+</head>
+
+<body>
+
+<h1>Update Locks</h1>
+<h2>Update Locks<h2>
+<button type="button" onclick="newLock()">New Lock</button>
+
+<button type="button" onclick="oldLock()">Old Lock</button>
+
+<h2>Lock Status</h2>
+<div id="locks">(Unknown...)</div>
+
+<h1>HEALTHCHECKS</h1>
+<h2>Status</h2>
+<div id="status">(loading...)</div>
+
+<h2>Uptime</h2>
+<div id="uptime">(loading...)</div>
+
+<h2>Trouble ahead<h2>
+<button type="button" onclick="breakThings()">Break things</button>
+
+</body>
+</html>

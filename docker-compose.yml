@@ -1,0 +1,50 @@
+version: '2.1'
+networks: {}
+volumes:
+  resin-data: {}
+services:
+  site:
+    build: ./site
+    ports:
+      - "80:8080"
+    restart: 'no'
+    volumes:
+      - 'resin-data:/data'
+  runtime-interfaces:
+    build:
+      context: ./runtime-interfaces
+    tty: true
+    restart: 'no'
+    labels:
+      io.resin.features.kernel-modules: '1'
+      io.resin.features.firmware: '1'
+      io.resin.features.dbus: '1'
+      io.resin.features.supervisor-api: '1'
+      io.resin.features.resin-api: '1'
+  bluetooth:
+    build:
+      context: ./bluetooth
+    tty: true
+    network_mode: host
+    restart: 'no'
+    labels:
+      io.resin.features.kernel-modules: '1'
+      io.resin.features.firmware: '1'
+      io.resin.features.dbus: '1'
+  kmods:
+    build:
+      context: ./kernel-module-build
+      args:
+        VERSION: '2.31.5+rev1.prod'
+    privileged: true
+    tty: true
+    restart: always
+    network_mode: host
+    volumes:
+      - 'resin-data:/data'
+    labels:
+      io.resin.features.kernel-modules: '1'
+      io.resin.features.firmware: '1'
+      io.resin.features.dbus: '1'
+      io.resin.features.supervisor-api: '1'
+      io.resin.features.resin-api: '1'

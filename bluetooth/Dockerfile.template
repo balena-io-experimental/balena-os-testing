@@ -1,0 +1,10 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian
+
+RUN apt-get update && apt-get install bluez
+
+WORKDIR usr/src/app
+
+COPY scan.sh ./
+COPY btctl ./btctl
+
+CMD if [ -n "$BT" ]; then bash scan.sh ; else echo "bluetooth not tested" ; fi

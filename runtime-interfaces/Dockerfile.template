@@ -1,0 +1,9 @@
+FROM balenalib/%%BALENA_MACHINE_NAME%%-debian
+
+RUN install_packages curl jq dbus
+
+WORKDIR /usr/src/app
+
+COPY start.sh ./
+
+CMD ["bash", "start.sh"]

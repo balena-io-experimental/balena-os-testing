@@ -7,7 +7,7 @@ services:
     build: ./site
     ports:
       - "80:8080"
-    restart: 'no'
+    restart: 'unless-stopped'
     volumes:
       - 'resin-data:/data'
   runtime-interfaces:
